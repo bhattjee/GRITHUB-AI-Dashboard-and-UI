@@ -77,7 +77,7 @@ const WorkoutChallenge = () => {
                         onCheckedChange={() => toggleDayCompletion(index)}
                         className="h-5 w-5"
                       />
-                      <span>Day {day.index + 1} - {day.muscle}</span>
+                      <span>Day {day.day} - {day.muscle}</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
