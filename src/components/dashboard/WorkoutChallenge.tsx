@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -8,96 +7,144 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trophy, Calendar as CalendarIcon, CheckCircle2, Flame } from 'lucide-react';
 
-const chestExercises = [
-  { name: "Bench Press", sets: 3, reps: "8-12", description: "Flat bench barbell press", safety: "Use a spotter for heavy lifts" },
-  { name: "Incline Dumbbell Press", sets: 3, reps: "10-15", description: "Upper chest focused press", safety: "Control the weights throughout" },
-  { name: "Chest Flyes", sets: 3, reps: "12-15", description: "Pec isolation movement", safety: "Don't go too heavy" },
-  { name: "Push-ups", sets: 3, reps: "15-20", description: "Bodyweight chest exercise", safety: "Maintain proper form" },
-  { name: "Cable Crossovers", sets: 3, reps: "12-15", description: "Chest isolation exercise", safety: "Control the movement" }
-];
+const chestExercises = {
+  weightLoss: [
+    { name: "Push-ups", sets: 4, reps: "20-25", description: "Bodyweight chest exercise", safety: "Maintain proper form" },
+    { name: "Incline Push-ups", sets: 4, reps: "15-20", description: "Upper chest focus", safety: "Keep core tight" },
+    { name: "High-Rep Bench Press", sets: 4, reps: "15-20", description: "Light weight, high reps", safety: "Control the movement" },
+    { name: "Cable Flyes", sets: 3, reps: "20-25", description: "Continuous tension", safety: "Maintain form throughout" },
+    { name: "Medicine Ball Push-ups", sets: 3, reps: "15-20", description: "Dynamic chest exercise", safety: "Balance carefully" }
+  ],
+  muscleBuild: [
+    { name: "Bench Press", sets: 4, reps: "6-8", description: "Heavy compound movement", safety: "Use a spotter" },
+    { name: "Incline Dumbbell Press", sets: 4, reps: "8-10", description: "Upper chest development", safety: "Control the weights" },
+    { name: "Weighted Dips", sets: 3, reps: "8-12", description: "Compound chest exercise", safety: "Proper depth" },
+    { name: "Decline Bench Press", sets: 3, reps: "8-10", description: "Lower chest focus", safety: "Lock the bench" },
+    { name: "Chest Flyes", sets: 3, reps: "10-12", description: "Isolation movement", safety: "Don't overstretch" }
+  ]
+};
 
-const backExercises = [
-  { name: "Pull-ups", sets: 3, reps: "8-12", description: "Upper back compound exercise", safety: "Full range of motion" },
-  { name: "Barbell Rows", sets: 3, reps: "8-12", description: "Mid-back strength builder", safety: "Keep back straight" },
-  { name: "Lat Pulldowns", sets: 3, reps: "10-15", description: "Latissimus dorsi focused", safety: "Avoid pulling with momentum" },
-  { name: "Seated Cable Rows", sets: 3, reps: "10-15", description: "Mid-back development", safety: "Maintain posture" },
-  { name: "Single-Arm Dumbbell Rows", sets: 3, reps: "12 each", description: "Unilateral back exercise", safety: "Brace core throughout" }
-];
+const backExercises = {
+  weightLoss: [
+    { name: "Assisted Pull-ups", sets: 4, reps: "15-20", description: "Full range back exercise", safety: "Complete full range" },
+    { name: "High-Rep Rows", sets: 4, reps: "20-25", description: "Light weight rowing", safety: "Squeeze at peak" },
+    { name: "Face Pulls", sets: 3, reps: "20-25", description: "Upper back endurance", safety: "Control movement" },
+    { name: "Resistance Band Pulls", sets: 3, reps: "20-30", description: "Back activation", safety: "Keep tension" },
+    { name: "TRX Rows", sets: 3, reps: "15-20", description: "Bodyweight back exercise", safety: "Body alignment" }
+  ],
+  muscleBuild: [
+    { name: "Weighted Pull-ups", sets: 4, reps: "6-8", description: "Heavy back compound", safety: "Control descent" },
+    { name: "Barbell Rows", sets: 4, reps: "8-10", description: "Heavy rowing movement", safety: "Maintain posture" },
+    { name: "T-Bar Rows", sets: 3, reps: "8-12", description: "Thick back builder", safety: "Brace core" },
+    { name: "Meadows Rows", sets: 3, reps: "8-10", description: "Unilateral back work", safety: "Hip hinge" },
+    { name: "Deadlifts", sets: 3, reps: "5-8", description: "Power back exercise", safety: "Proper setup" }
+  ]
+};
 
-const legExercises = [
-  { name: "Squats", sets: 3, reps: "8-12", description: "Compound leg exercise", safety: "Keep knees aligned with toes" },
-  { name: "Leg Press", sets: 3, reps: "10-15", description: "Lower body press", safety: "Don't lock knees at top" },
-  { name: "Romanian Deadlifts", sets: 3, reps: "8-12", description: "Hamstring focused", safety: "Maintain neutral spine" },
-  { name: "Walking Lunges", sets: 3, reps: "10 each", description: "Dynamic leg exercise", safety: "Take controlled steps" },
-  { name: "Leg Extensions", sets: 3, reps: "12-15", description: "Quad isolation", safety: "Avoid excessive weight" }
-];
+const legExercises = {
+  weightLoss: [
+    { name: "Bodyweight Squats", sets: 4, reps: "25-30", description: "High volume legs", safety: "Full depth" },
+    { name: "Walking Lunges", sets: 4, reps: "20 each", description: "Cardio and legs", safety: "Step control" },
+    { name: "Step-ups", sets: 3, reps: "20 each", description: "Single leg work", safety: "Balance focus" },
+    { name: "Jump Squats", sets: 3, reps: "15-20", description: "Explosive movement", safety: "Land softly" },
+    { name: "High-Rep Leg Press", sets: 3, reps: "20-25", description: "Volume focused", safety: "Don't lock out" }
+  ],
+  muscleBuild: [
+    { name: "Heavy Squats", sets: 5, reps: "5-8", description: "Primary leg builder", safety: "Proper depth" },
+    { name: "Romanian Deadlifts", sets: 4, reps: "8-10", description: "Hamstring focus", safety: "Hip hinge" },
+    { name: "Hack Squats", sets: 3, reps: "8-12", description: "Quad development", safety: "Control descent" },
+    { name: "Bulgarian Split Squats", sets: 3, reps: "8-10", description: "Unilateral strength", safety: "Balance" },
+    { name: "Leg Press", sets: 3, reps: "8-12", description: "Heavy compound", safety: "Control weight" }
+  ]
+};
 
-const shoulderExercises = [
-  { name: "Overhead Press", sets: 3, reps: "8-12", description: "Compound shoulder exercise", safety: "Don't arch back" },
-  { name: "Lateral Raises", sets: 3, reps: "12-15", description: "Side deltoid isolation", safety: "Use controlled motion" },
-  { name: "Front Raises", sets: 3, reps: "12-15", description: "Front deltoid focus", safety: "Avoid swinging" },
-  { name: "Face Pulls", sets: 3, reps: "12-15", description: "Rear deltoid developer", safety: "Pull to eye level" },
-  { name: "Upright Rows", sets: 3, reps: "10-15", description: "Upper trap exercise", safety: "Don't pull too high" }
-];
+const shoulderExercises = {
+  weightLoss: [
+    { name: "Light Military Press", sets: 4, reps: "15-20", description: "High rep pressing", safety: "Control path" },
+    { name: "Band Laterals", sets: 4, reps: "20-25", description: "Side delt burn", safety: "Maintain form" },
+    { name: "Front Raises", sets: 3, reps: "15-20", description: "Light weight", safety: "No swinging" },
+    { name: "Upright Rows", sets: 3, reps: "15-20", description: "High volume", safety: "Elbows lead" },
+    { name: "Pike Push-ups", sets: 3, reps: "12-15", description: "Bodyweight press", safety: "Form first" }
+  ],
+  muscleBuild: [
+    { name: "Heavy OHP", sets: 4, reps: "6-8", description: "Strength press", safety: "Brace core" },
+    { name: "Seated DB Press", sets: 4, reps: "8-10", description: "Heavy pressing", safety: "Back support" },
+    { name: "Heavy Laterals", sets: 3, reps: "10-12", description: "Side delt focus", safety: "Controlled" },
+    { name: "Face Pulls", sets: 3, reps: "12-15", description: "Rear delt work", safety: "Pull to face" },
+    { name: "Arnold Press", sets: 3, reps: "8-12", description: "Full shoulder", safety: "Rotate smooth" }
+  ]
+};
 
-const armExercises = [
-  { name: "Bicep Curls", sets: 3, reps: "10-15", description: "Basic bicep builder", safety: "Avoid excessive swinging" },
-  { name: "Tricep Pushdowns", sets: 3, reps: "10-15", description: "Tricep isolation", safety: "Keep elbows tucked" },
-  { name: "Hammer Curls", sets: 3, reps: "10-15", description: "Forearm and bicep exercise", safety: "Control the weight" },
-  { name: "Skull Crushers", sets: 3, reps: "10-12", description: "Lying tricep extension", safety: "Don't lock elbows" },
-  { name: "Preacher Curls", sets: 3, reps: "10-12", description: "Bicep isolation", safety: "Full range of motion" }
-];
+const armExercises = {
+  weightLoss: [
+    { name: "High-Rep Curls", sets: 4, reps: "20-25", description: "Light bicep work", safety: "Full range" },
+    { name: "Band Pushdowns", sets: 4, reps: "20-30", description: "Tricep burn", safety: "Keep tension" },
+    { name: "Hammer Curls", sets: 3, reps: "15-20", description: "Light weight", safety: "No swing" },
+    { name: "Diamond Push-ups", sets: 3, reps: "15-20", description: "Tricep focus", safety: "Keep elbows in" },
+    { name: "21s Bicep Curls", sets: 3, reps: "21 reps", description: "Endurance", safety: "Control tempo" }
+  ],
+  muscleBuild: [
+    { name: "Heavy Barbell Curls", sets: 4, reps: "8-10", description: "Mass builder", safety: "Strict form" },
+    { name: "Skull Crushers", sets: 4, reps: "8-12", description: "Tricep power", safety: "Elbow position" },
+    { name: "Incline DB Curls", sets: 3, reps: "10-12", description: "Peak contraction", safety: "Full stretch" },
+    { name: "Close-Grip Bench", sets: 3, reps: "8-10", description: "Tricep strength", safety: "Wrist position" },
+    { name: "Preacher Curls", sets: 3, reps: "10-12", description: "Strict bicep", safety: "Use support" }
+  ]
+};
 
-const coreExercises = [
-  { name: "Plank", sets: 3, reps: "30-60s", description: "Core stabilization", safety: "Maintain neutral spine" },
-  { name: "Russian Twists", sets: 3, reps: "15 each side", description: "Rotational core movement", safety: "Control the twist" },
-  { name: "Hanging Leg Raises", sets: 3, reps: "10-15", description: "Lower abs focus", safety: "Avoid swinging" },
-  { name: "Ab Rollouts", sets: 3, reps: "8-12", description: "Full core engagement", safety: "Progress gradually" },
-  { name: "Mountain Climbers", sets: 3, reps: "20 each side", description: "Dynamic core exercise", safety: "Maintain hip position" }
-];
+const coreExercises = {
+  weightLoss: [
+    { name: "Mountain Climbers", sets: 4, reps: "30 sec", description: "Core cardio", safety: "Hip position" },
+    { name: "Russian Twists", sets: 4, reps: "30 each", description: "Rotational move", safety: "Control twist" },
+    { name: "Bicycle Crunches", sets: 3, reps: "30 sec", description: "Dynamic core", safety: "Lower back" },
+    { name: "Plank Hold", sets: 3, reps: "45-60 sec", description: "Endurance", safety: "Flat back" },
+    { name: "Flutter Kicks", sets: 3, reps: "30 sec", description: "Lower abs", safety: "Back flat" }
+  ],
+  muscleBuild: [
+    { name: "Weighted Crunches", sets: 4, reps: "12-15", description: "Heavy abs", safety: "Control weight" },
+    { name: "Cable Woodchops", sets: 4, reps: "12 each", description: "Power core", safety: "Hip rotation" },
+    { name: "Dragon Flags", sets: 3, reps: "8-12", description: "Full core", safety: "Progress slowly" },
+    { name: "Ab Wheel", sets: 3, reps: "10-15", description: "Core strength", safety: "Roll control" },
+    { name: "Hanging Leg Raises", sets: 3, reps: "12-15", description: "Lower abs", safety: "No swing" }
+  ]
+};
 
 const generateWorkoutPlan = (type: 'weight-loss' | 'muscle-gain') => {
+  const workoutStyle = type === 'weight-loss' ? 'weightLoss' : 'muscleBuild';
+  
   const days = Array.from({ length: 28 }, (_, i) => {
     const dayNumber = i + 1;
     let muscle = '';
     let exerciseList: any[] = [];
     
-    // Determine muscle group and exercises for the day
     if (i % 7 === 0) {
       muscle = 'Chest';
-      exerciseList = chestExercises;
+      exerciseList = chestExercises[workoutStyle];
     } else if (i % 7 === 1) {
       muscle = 'Back';
-      exerciseList = backExercises;
+      exerciseList = backExercises[workoutStyle];
     } else if (i % 7 === 2) {
       muscle = 'Legs';
-      exerciseList = legExercises;
+      exerciseList = legExercises[workoutStyle];
     } else if (i % 7 === 3) {
       muscle = 'Shoulders';
-      exerciseList = shoulderExercises;
+      exerciseList = shoulderExercises[workoutStyle];
     } else if (i % 7 === 4) {
       muscle = 'Arms';
-      exerciseList = armExercises;
+      exerciseList = armExercises[workoutStyle];
     } else if (i % 7 === 5) {
       muscle = 'Core';
-      exerciseList = coreExercises;
+      exerciseList = coreExercises[workoutStyle];
     } else {
       muscle = 'Rest';
       exerciseList = [];
     }
 
-    // Create day object with exercises
     return {
       day: dayNumber,
       completed: false,
       muscle: muscle,
-      exercises: muscle !== 'Rest' ? exerciseList.map(ex => ({
-        ...ex,
-        reps: type === 'weight-loss' ? (typeof ex.reps === 'string' && ex.reps.includes('-') ? 
-          ex.reps.split('-').map(n => parseInt(n) + 5).join('-') : 
-          `${parseInt(ex.reps.toString()) + 5}`) : 
-          ex.reps
-      })) : []
+      exercises: exerciseList
     };
   });
 
