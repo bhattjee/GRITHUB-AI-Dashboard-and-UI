@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -8,19 +8,98 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trophy, Calendar as CalendarIcon, CheckCircle2, Flame } from 'lucide-react';
 
+const chestExercises = [
+  { name: "Bench Press", sets: 3, reps: "8-12", description: "Flat bench barbell press", safety: "Use a spotter for heavy lifts" },
+  { name: "Incline Dumbbell Press", sets: 3, reps: "10-15", description: "Upper chest focused press", safety: "Control the weights throughout" },
+  { name: "Chest Flyes", sets: 3, reps: "12-15", description: "Pec isolation movement", safety: "Don't go too heavy" },
+  { name: "Push-ups", sets: 3, reps: "15-20", description: "Bodyweight chest exercise", safety: "Maintain proper form" },
+  { name: "Cable Crossovers", sets: 3, reps: "12-15", description: "Chest isolation exercise", safety: "Control the movement" }
+];
+
+const backExercises = [
+  { name: "Pull-ups", sets: 3, reps: "8-12", description: "Upper back compound exercise", safety: "Full range of motion" },
+  { name: "Barbell Rows", sets: 3, reps: "8-12", description: "Mid-back strength builder", safety: "Keep back straight" },
+  { name: "Lat Pulldowns", sets: 3, reps: "10-15", description: "Latissimus dorsi focused", safety: "Avoid pulling with momentum" },
+  { name: "Seated Cable Rows", sets: 3, reps: "10-15", description: "Mid-back development", safety: "Maintain posture" },
+  { name: "Single-Arm Dumbbell Rows", sets: 3, reps: "12 each", description: "Unilateral back exercise", safety: "Brace core throughout" }
+];
+
+const legExercises = [
+  { name: "Squats", sets: 3, reps: "8-12", description: "Compound leg exercise", safety: "Keep knees aligned with toes" },
+  { name: "Leg Press", sets: 3, reps: "10-15", description: "Lower body press", safety: "Don't lock knees at top" },
+  { name: "Romanian Deadlifts", sets: 3, reps: "8-12", description: "Hamstring focused", safety: "Maintain neutral spine" },
+  { name: "Walking Lunges", sets: 3, reps: "10 each", description: "Dynamic leg exercise", safety: "Take controlled steps" },
+  { name: "Leg Extensions", sets: 3, reps: "12-15", description: "Quad isolation", safety: "Avoid excessive weight" }
+];
+
+const shoulderExercises = [
+  { name: "Overhead Press", sets: 3, reps: "8-12", description: "Compound shoulder exercise", safety: "Don't arch back" },
+  { name: "Lateral Raises", sets: 3, reps: "12-15", description: "Side deltoid isolation", safety: "Use controlled motion" },
+  { name: "Front Raises", sets: 3, reps: "12-15", description: "Front deltoid focus", safety: "Avoid swinging" },
+  { name: "Face Pulls", sets: 3, reps: "12-15", description: "Rear deltoid developer", safety: "Pull to eye level" },
+  { name: "Upright Rows", sets: 3, reps: "10-15", description: "Upper trap exercise", safety: "Don't pull too high" }
+];
+
+const armExercises = [
+  { name: "Bicep Curls", sets: 3, reps: "10-15", description: "Basic bicep builder", safety: "Avoid excessive swinging" },
+  { name: "Tricep Pushdowns", sets: 3, reps: "10-15", description: "Tricep isolation", safety: "Keep elbows tucked" },
+  { name: "Hammer Curls", sets: 3, reps: "10-15", description: "Forearm and bicep exercise", safety: "Control the weight" },
+  { name: "Skull Crushers", sets: 3, reps: "10-12", description: "Lying tricep extension", safety: "Don't lock elbows" },
+  { name: "Preacher Curls", sets: 3, reps: "10-12", description: "Bicep isolation", safety: "Full range of motion" }
+];
+
+const coreExercises = [
+  { name: "Plank", sets: 3, reps: "30-60s", description: "Core stabilization", safety: "Maintain neutral spine" },
+  { name: "Russian Twists", sets: 3, reps: "15 each side", description: "Rotational core movement", safety: "Control the twist" },
+  { name: "Hanging Leg Raises", sets: 3, reps: "10-15", description: "Lower abs focus", safety: "Avoid swinging" },
+  { name: "Ab Rollouts", sets: 3, reps: "8-12", description: "Full core engagement", safety: "Progress gradually" },
+  { name: "Mountain Climbers", sets: 3, reps: "20 each side", description: "Dynamic core exercise", safety: "Maintain hip position" }
+];
+
 const generateWorkoutPlan = (type: 'weight-loss' | 'muscle-gain') => {
-  const days = Array.from({ length: 28 }, (_, i) => ({
-    day: i + 1,
-    completed: false,
-    muscle: i % 7 === 0 ? 'Chest' : i % 7 === 1 ? 'Back' : i % 7 === 2 ? 'Legs' : i % 7 === 3 ? 'Shoulders' : i % 7 === 4 ? 'Arms' : i % 7 === 5 ? 'Core' : 'Rest',
-    exercises: i % 7 !== 6 ? [
-      { name: `Exercise 1`, sets: 3, reps: type === 'weight-loss' ? '15-20' : '8-12', description: 'Exercise description', safety: 'Safety tips' },
-      { name: `Exercise 2`, sets: 3, reps: type === 'weight-loss' ? '15-20' : '8-12', description: 'Exercise description', safety: 'Safety tips' },
-      { name: `Exercise 3`, sets: 3, reps: type === 'weight-loss' ? '15-20' : '8-12', description: 'Exercise description', safety: 'Safety tips' },
-      { name: `Exercise 4`, sets: 3, reps: type === 'weight-loss' ? '15-20' : '8-12', description: 'Exercise description', safety: 'Safety tips' },
-      { name: `Exercise 5`, sets: 3, reps: type === 'weight-loss' ? '15-20' : '8-12', description: 'Exercise description', safety: 'Safety tips' },
-    ] : [],
-  }));
+  const days = Array.from({ length: 28 }, (_, i) => {
+    const dayNumber = i + 1;
+    let muscle = '';
+    let exerciseList: any[] = [];
+    
+    // Determine muscle group and exercises for the day
+    if (i % 7 === 0) {
+      muscle = 'Chest';
+      exerciseList = chestExercises;
+    } else if (i % 7 === 1) {
+      muscle = 'Back';
+      exerciseList = backExercises;
+    } else if (i % 7 === 2) {
+      muscle = 'Legs';
+      exerciseList = legExercises;
+    } else if (i % 7 === 3) {
+      muscle = 'Shoulders';
+      exerciseList = shoulderExercises;
+    } else if (i % 7 === 4) {
+      muscle = 'Arms';
+      exerciseList = armExercises;
+    } else if (i % 7 === 5) {
+      muscle = 'Core';
+      exerciseList = coreExercises;
+    } else {
+      muscle = 'Rest';
+      exerciseList = [];
+    }
+
+    // Create day object with exercises
+    return {
+      day: dayNumber,
+      completed: false,
+      muscle: muscle,
+      exercises: muscle !== 'Rest' ? exerciseList.map(ex => ({
+        ...ex,
+        reps: type === 'weight-loss' ? (typeof ex.reps === 'string' && ex.reps.includes('-') ? 
+          ex.reps.split('-').map(n => parseInt(n) + 5).join('-') : 
+          `${parseInt(ex.reps.toString()) + 5}`) : 
+          ex.reps
+      })) : []
+    };
+  });
 
   return days;
 };
@@ -43,6 +122,34 @@ const WorkoutChallenge = () => {
     const savedStreak = localStorage.getItem('workoutChallengeStreak');
     return savedStreak ? parseInt(savedStreak) : 0;
   });
+  const [selectedDates, setSelectedDates] = useState<Date[]>(() => {
+    return workoutPlan
+      .filter(day => day.completed)
+      .map((_, i) => new Date(2024, 0, i + 1));
+  });
+
+  // Calculate streak when completed days change
+  useEffect(() => {
+    calculateStreak();
+  }, [workoutPlan]);
+
+  const calculateStreak = () => {
+    // Sort days by number and find consecutive completed days
+    const sortedDays = [...workoutPlan].sort((a, b) => a.day - b.day);
+    let currentStreak = 0;
+    
+    for (let i = 0; i < sortedDays.length; i++) {
+      if (sortedDays[i].completed) {
+        currentStreak++;
+      } else {
+        // Break streak if a day is not completed
+        break;
+      }
+    }
+    
+    setStreak(currentStreak);
+    localStorage.setItem('workoutChallengeStreak', currentStreak.toString());
+  };
 
   const handleTypeChange = (checked: boolean) => {
     setShowDialog(true);
@@ -54,6 +161,7 @@ const WorkoutChallenge = () => {
     const newPlan = generateWorkoutPlan(newType);
     setWorkoutPlan(newPlan);
     setStreak(0);
+    setSelectedDates([]);
     localStorage.setItem('workoutChallengeType', newType);
     localStorage.setItem('workoutChallengePlan', JSON.stringify(newPlan));
     localStorage.setItem('workoutChallengeStreak', '0');
@@ -68,13 +176,15 @@ const WorkoutChallenge = () => {
       // Update local storage
       localStorage.setItem('workoutChallengePlan', JSON.stringify(newPlan));
       
+      // Update selected dates for calendar
+      const newDates = newPlan
+        .filter(day => day.completed)
+        .map((day) => new Date(2024, 0, day.day));
+      
+      setSelectedDates(newDates);
+      
       return newPlan;
     });
-
-    // Update streak
-    const completedDays = workoutPlan.filter(day => day.completed).length + (workoutPlan[dayIndex].completed ? -1 : 1);
-    setStreak(completedDays);
-    localStorage.setItem('workoutChallengeStreak', completedDays.toString());
   };
 
   return (
@@ -96,7 +206,7 @@ const WorkoutChallenge = () => {
           <div className="flex-1 order-2 md:order-1">
             <Accordion type="single" collapsible className="bg-black/20 rounded-lg border border-gray-800">
               {workoutPlan.map((day, index) => (
-                <AccordionItem key={index} value={`day-${index + 1}`} className="border-b border-gray-800 last:border-0">
+                <AccordionItem key={index} value={`day-${day.day}`} className="border-b border-gray-800 last:border-0">
                   <AccordionTrigger className="px-4 py-3 hover:bg-black/20">
                     <div className="flex items-center gap-3">
                       <Checkbox
@@ -163,8 +273,8 @@ const WorkoutChallenge = () => {
               </div>
               <Calendar
                 mode="multiple"
-                selected={workoutPlan.filter(day => day.completed).map((_, i) => new Date(2024, 0, i + 1))}
-                className="rounded-md"
+                selected={selectedDates}
+                className="rounded-md pointer-events-auto"
               />
             </div>
           </div>
