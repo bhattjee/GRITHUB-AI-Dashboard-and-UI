@@ -1,13 +1,21 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dumbbell, CheckCircle, Bookmark, ArrowRight } from 'lucide-react';
+import { Dumbbell, CheckCircle, Bookmark, ArrowRight, Search, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Exercise = {
   id: string;
@@ -17,7 +25,22 @@ type Exercise = {
   reps: number | string;
 };
 
-const muscleGroups = {
+type MuscleGroups = {
+  chest: Exercise[];
+  back: Exercise[];
+  legs: Exercise[];
+  shoulders: Exercise[];
+  arms: Exercise[];
+  core: Exercise[];
+  cardio: Exercise[];
+};
+
+type Workout = {
+  name: string;
+  exercises: Exercise[];
+};
+
+const muscleGroups: MuscleGroups = {
   chest: [
     { id: 'chest-1', name: 'Bench Press', description: 'Flat bench barbell press', sets: 4, reps: 12 },
     { id: 'chest-2', name: 'Incline Dumbbell Press', description: 'Upper chest focused press', sets: 3, reps: 12 },
@@ -97,32 +120,50 @@ const CustomWorkout = () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [activeTab, setActiveTab] = useState<string>("select");
-  const [savedWorkouts, setSavedWorkouts] = useState<{name: string; exercises: Exercise[]}[]>(() => {
+  const [savedWorkouts, setSavedWorkouts] = useState<Workout[]>(() => {
     const saved = localStorage.getItem('savedCustomWorkouts');
     return saved ? JSON.parse(saved) : [];
   });
   const [workoutName, setWorkoutName] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showResetDialog, setShowResetDialog] = useState<boolean>(false);
 
   useEffect(() => {
-    // Load saved workouts when component mounts
+    localStorage.setItem('customWorkoutPlan', JSON.stringify(selectedExercises));
+  }, [selectedExercises]);
+
+  useEffect(() => {
     const savedCustomWorkouts = localStorage.getItem('savedCustomWorkouts');
     if (savedCustomWorkouts) {
       setSavedWorkouts(JSON.parse(savedCustomWorkouts));
     }
   }, []);
 
+  const filteredMuscleGroups = useMemo(() => {
+    if (!searchTerm) return muscleGroups;
+
+    const filtered: Partial<MuscleGroups> = {};
+    for (const [group, exercises] of Object.entries(muscleGroups) as [keyof MuscleGroups, Exercise[]][]) {
+      const filteredExercises = exercises.filter(exercise =>
+        exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (filteredExercises.length > 0) {
+        filtered[group] = filteredExercises;
+      }
+    }
+    return filtered as MuscleGroups;
+  }, [searchTerm]);
+
   const handleExerciseToggle = (exercise: Exercise) => {
     setSelectedExercises(prev => {
-      const isSelected = prev.find(e => e.id === exercise.id);
-      if (isSelected) {
-        return prev.filter(e => e.id !== exercise.id);
-      }
-      return [...prev, exercise];
+      const isSelected = prev.some(e => e.id === exercise.id);
+      return isSelected
+        ? prev.filter(e => e.id !== exercise.id)
+        : [...prev, exercise];
     });
   };
 
   const generateCustomPlan = () => {
-    // Don't allow empty plans
     if (selectedExercises.length === 0) {
       toast({
         title: "No exercises selected",
@@ -132,22 +173,21 @@ const CustomWorkout = () => {
       return;
     }
     
-    // Save to local storage
-    localStorage.setItem('customWorkoutPlan', JSON.stringify(selectedExercises));
+    let name = workoutName.trim() || `Custom Workout ${savedWorkouts.length + 1}`;
     
-    // Generate a default name if none provided
-    const name = workoutName.trim() || `Custom Workout ${savedWorkouts.length + 1}`;
+    let counter = 1;
+    const originalName = name;
+    while (savedWorkouts.some(workout => workout.name === name)) {
+      name = `${originalName} (${counter})`;
+      counter++;
+    }
     
-    // Save to saved workouts
     const newWorkout = { name, exercises: selectedExercises };
     const updatedWorkouts = [...savedWorkouts, newWorkout];
     setSavedWorkouts(updatedWorkouts);
     localStorage.setItem('savedCustomWorkouts', JSON.stringify(updatedWorkouts));
     
-    // Reset workout name
     setWorkoutName("");
-    
-    // Switch to the saved tab
     setActiveTab("saved");
     
     toast({
@@ -165,17 +205,27 @@ const CustomWorkout = () => {
     });
   };
 
+  const resetWorkouts = () => {
+    setSavedWorkouts([]);
+    localStorage.removeItem('savedCustomWorkouts');
+    setShowResetDialog(false);
+    toast({
+      title: "Workouts reset",
+      description: "All saved workouts have been cleared",
+    });
+  };
+
   return (
-    <CardContent className="p-0">
+    <CardContent className="p-0 bg-black">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 mb-4 bg-black/30">
-          <TabsTrigger value="select" className="data-[state=active]:bg-gym-accent">
+        <TabsList className="w-full grid grid-cols-2 mb-4 bg-black border border-gray-800">
+          <TabsTrigger value="select" className="data-[state=active]:bg-white data-[state=active]:text-black">
             Select Exercises
           </TabsTrigger>
-          <TabsTrigger value="saved" className="data-[state=active]:bg-gym-accent">
+          <TabsTrigger value="saved" className="data-[state=active]:bg-white data-[state=active]:text-black">
             Saved Workouts
             {savedWorkouts.length > 0 && (
-              <span className="ml-2 bg-gym-accent/20 text-gym-accent text-xs rounded-full px-2 py-0.5">
+              <span className="ml-2 bg-gray-800 text-white text-xs rounded-full px-2 py-0.5">
                 {savedWorkouts.length}
               </span>
             )}
@@ -183,28 +233,48 @@ const CustomWorkout = () => {
         </TabsList>
         
         <TabsContent value="select" className="mt-0">
-          <div className="flex items-center justify-between px-4 pb-3">
-            <div className="text-sm text-gray-400">
-              Selected: <span className="text-white font-medium">{selectedExercises.length} exercises</span>
+          <div className="px-4 pb-3">
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search exercises..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded bg-black border border-gray-800 text-white focus:border-gray-600 focus:ring-0"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
-            {selectedExercises.length > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={clearSelection}
-                className="text-xs h-8"
-              >
-                Clear Selection
-              </Button>
-            )}
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Selected: <span className="text-white font-medium">{selectedExercises.length} exercises</span>
+              </div>
+              {selectedExercises.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearSelection}
+                  className="text-xs h-8 bg-transparent text-white border-gray-700 hover:bg-gray-800 hover:text-white"
+                >
+                  Clear Selection
+                </Button>
+              )}
+            </div>
           </div>
           
           <ScrollArea className="h-[320px] pr-4">
             <div className="p-4 space-y-6">
-              {Object.entries(muscleGroups).map(([muscle, exercises]) => (
-                <div key={muscle} className="rounded-lg bg-black/20 p-4">
-                  <h3 className="text-lg font-semibold mb-3 capitalize flex items-center">
-                    <Dumbbell className="h-4 w-4 mr-2 text-gym-accent" />
+              {Object.entries(filteredMuscleGroups).map(([muscle, exercises]) => (
+                <div key={muscle} className="rounded-lg bg-black border border-gray-800 p-4">
+                  <h3 className="text-lg font-semibold mb-3 capitalize flex items-center text-white">
+                    <Dumbbell className="h-4 w-4 mr-2 text-white" />
                     {muscle}
                   </h3>
                   <div className="space-y-3">
@@ -213,21 +283,21 @@ const CustomWorkout = () => {
                         key={exercise.id} 
                         className={`flex items-start space-x-3 p-3 rounded-lg transition-colors ${
                           selectedExercises.some(e => e.id === exercise.id) 
-                            ? 'bg-gym-accent/20 border border-gym-accent/30' 
-                            : 'hover:bg-black/20 border border-transparent hover:border-gray-800'
+                            ? 'bg-gray-900 border border-gray-700' 
+                            : 'hover:bg-gray-900 border border-transparent hover:border-gray-700'
                         }`}
                       >
                         <Checkbox
                           id={exercise.id}
                           checked={selectedExercises.some(e => e.id === exercise.id)}
                           onCheckedChange={() => handleExerciseToggle(exercise)}
-                          className="mt-0.5"
+                          className="mt-0.5 data-[state=checked]:bg-white data-[state=checked]:text-black"
                         />
-                        <div>
-                          <label htmlFor={exercise.id} className="font-medium cursor-pointer flex items-center">
+                        <div className="flex-1">
+                          <label htmlFor={exercise.id} className="font-medium cursor-pointer flex items-center text-white">
                             {exercise.name}
                             {selectedExercises.some(e => e.id === exercise.id) && (
-                              <CheckCircle className="h-4 w-4 ml-2 text-gym-accent" />
+                              <CheckCircle className="h-4 w-4 ml-2 text-white" />
                             )}
                           </label>
                           <p className="text-sm text-gray-400">{exercise.description}</p>
@@ -238,6 +308,12 @@ const CustomWorkout = () => {
                   </div>
                 </div>
               ))}
+              {Object.keys(filteredMuscleGroups).length === 0 && (
+                <div className="text-center py-10 text-gray-500">
+                  <Search className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p>No exercises found matching "{searchTerm}"</p>
+                </div>
+              )}
             </div>
           </ScrollArea>
           
@@ -248,12 +324,12 @@ const CustomWorkout = () => {
                 value={workoutName}
                 onChange={(e) => setWorkoutName(e.target.value)}
                 placeholder="Name your workout (optional)"
-                className="w-full p-2 rounded bg-black/30 border border-gray-800 text-white mb-3"
+                className="w-full p-2 rounded bg-black border border-gray-800 text-white mb-3 focus:border-gray-600 focus:ring-0"
               />
             </div>
             <Button 
               onClick={generateCustomPlan}
-              className="w-full bg-gym-accent hover:bg-gym-accent/90 font-semibold"
+              className="w-full bg-white text-black hover:bg-gray-200 font-semibold"
               disabled={selectedExercises.length === 0}
             >
               Save Workout Plan
@@ -266,32 +342,41 @@ const CustomWorkout = () => {
           <ScrollArea className="h-[400px]">
             <div className="p-4 space-y-4">
               {savedWorkouts.length > 0 ? (
-                savedWorkouts.map((workout, index) => (
-                  <div key={index} className="bg-black/20 rounded-lg overflow-hidden border border-gray-800">
-                    <div className="bg-black/30 p-3 font-medium flex items-center justify-between">
-                      <h3 className="flex items-center">
-                        <Bookmark className="h-4 w-4 mr-2 text-gym-accent" />
-                        {workout.name}
-                      </h3>
-                      <span className="text-xs bg-gym-accent/20 text-gym-accent rounded-full px-2 py-0.5">
-                        {workout.exercises.length} exercises
-                      </span>
-                    </div>
-                    <div className="p-3">
-                      {workout.exercises.map((exercise, exIndex) => (
-                        <div key={exIndex} className="py-2 flex items-start border-b border-gray-800 last:border-b-0">
-                          <ArrowRight className="h-4 w-4 mr-2 text-gym-accent mt-1 shrink-0" />
-                          <div>
-                            <div className="font-medium">{exercise.name}</div>
-                            <div className="text-sm text-gray-400">
-                              {exercise.sets} sets × {exercise.reps} reps
+                <>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => setShowResetDialog(true)}
+                    className="w-full mb-4 bg-red-600 hover:bg-red-700"
+                  >
+                    Reset Workouts
+                  </Button>
+                  {savedWorkouts.map((workout, index) => (
+                    <div key={index} className="bg-black rounded-lg overflow-hidden border border-gray-800">
+                      <div className="bg-gray-900 p-3 font-medium flex items-center justify-between">
+                        <h3 className="flex items-center text-white">
+                          <Bookmark className="h-4 w-4 mr-2 text-white" />
+                          {workout.name}
+                        </h3>
+                        <span className="text-xs bg-gray-800 text-white rounded-full px-2 py-0.5">
+                          {workout.exercises.length} exercises
+                        </span>
+                      </div>
+                      <div className="p-3">
+                        {workout.exercises.map((exercise, exIndex) => (
+                          <div key={exIndex} className="py-2 flex items-start border-b border-gray-800 last:border-b-0">
+                            <ArrowRight className="h-4 w-4 mr-2 text-white mt-1 shrink-0" />
+                            <div>
+                              <div className="font-medium text-white">{exercise.name}</div>
+                              <div className="text-sm text-gray-400">
+                                {exercise.sets} sets × {exercise.reps} reps
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </>
               ) : (
                 <div className="text-center py-10 text-gray-500">
                   <Bookmark className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -303,6 +388,28 @@ const CustomWorkout = () => {
           </ScrollArea>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent className="bg-black border border-gray-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This action cannot be undone. This will permanently delete all your saved workouts.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-800 border-gray-700 hover:bg-gray-700 text-white">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={resetWorkouts}
+            >
+              Reset Workouts
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CardContent>
   );
 };

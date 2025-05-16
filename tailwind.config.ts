@@ -55,8 +55,8 @@ export default {
         },
         gym: {
           dark: "#1A1F2C",
-          darker: "#222222",
-          accent: "#6366F1",
+          darker: "#323232",
+          accent: "#ffff",
         },
       },
       borderRadius: {

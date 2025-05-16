@@ -1,25 +1,53 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Dumbbell } from 'lucide-react';
 
+// OPTION 1: Use your own video file in public/videos/ folder
+// const videoSrc = '/videos/gym-background.mp4'; // Uncomment this if using your own video
+
+// OPTION 2: Use this placeholder video URL (comment out if using your own video)
+const videoSrc = 'https://video.gumlet.io/67938e0d9adc85447fb611ad/67f43b72aac3d4fca78ab75d/download.mp4';
+
 const Index = () => {
   const navigate = useNavigate();
 
-  const handlePlanSelection = (planType: 'ai' | 'manual') => {
+  const handlePlanSelection = async (planType) => {
     if (planType === 'ai') {
-      navigate('/ai-plan');
+        try {
+            const response = await fetch('http://localhost:5001/');
+            if (response.ok) {
+                window.location.href = 'http://localhost:5001/';
+            }
+        } catch (error) {
+            console.error('Connection failed:', error);
+        }
     } else {
-      navigate('/dashboard');
+        navigate('/dashboard');
     }
-  };
+};
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gym-dark text-white">
-      <div className="text-center space-y-8">
-        <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+    <div className="relative min-h-screen flex items-center justify-center text-white font-inherit overflow-hidden">
+      {/* Background Video */}
+      <video 
+        autoPlay 
+        loop 
+        muted 
+        playsInline
+        className="absolute z-0 w-full h-full object-cover"
+      >
+        <source src={videoSrc} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      
+      {/* Dark overlay for better text visibility */}
+      <div className="absolute z-10 w-full h-full bg-black bg-opacity-70"></div>
+      
+      {/* Content */}
+      <div className="relative z-20 text-center space-y-8 bg-black bg-opacity-80 shadow-xl rounded-xl p-10 border border-gray-800 backdrop-blur-sm max-w-4xl mx-4">
+        <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-300 to-gray-500">
           Transform Your Fitness Journey
         </h1>
         <p className="text-xl text-gray-400 max-w-2xl mx-auto">
@@ -28,25 +56,28 @@ const Index = () => {
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button size="lg" className="bg-gym-accent hover:bg-gym-accent/90">
+            <Button 
+              size="lg" 
+              className="bg-white text-black hover:bg-gray-200 transition-colors"
+            >
               <Dumbbell className="mr-2 h-5 w-5" />
               Start Your Journey
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-gym-darker border-gray-700">
+          <DialogContent className="bg-black border border-gray-800 shadow-lg text-white">
             <DialogHeader>
               <DialogTitle className="text-white">Choose Your Plan Type</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <Button
                 onClick={() => handlePlanSelection('ai')}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-white hover:bg-gray-200 text-black"
               >
                 AI Generated Plan
               </Button>
               <Button
                 onClick={() => handlePlanSelection('manual')}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-white hover:bg-gray-200 text-black"
               >
                 Choose Manual Plan
               </Button>
