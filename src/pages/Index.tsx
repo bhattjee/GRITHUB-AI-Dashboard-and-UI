@@ -4,11 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Dumbbell } from 'lucide-react';
 
-// OPTION 1: Use your own video file in public/videos/ folder
-// const videoSrc = '/videos/gym-background.mp4'; // Uncomment this if using your own video
-
-// OPTION 2: Use this placeholder video URL (comment out if using your own video)
-const videoSrc = 'https://video.gumlet.io/67938e0d9adc85447fb611ad/67f43b72aac3d4fca78ab75d/download.mp4';
+// Background video URL - can be configured via .env
+const videoSrc = import.meta.env.VITE_VIDEO_URL || 'https://video.gumlet.io/67938e0d9adc85447fb611ad/67f43b72aac3d4fca78ab75d/download.mp4';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -16,9 +13,10 @@ const Index = () => {
   const handlePlanSelection = async (planType) => {
     if (planType === 'ai') {
         try {
-            const response = await fetch('http://localhost:5001/');
+            const aiServiceUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:5001/';
+            const response = await fetch(aiServiceUrl);
             if (response.ok) {
-                window.location.href = 'http://localhost:5001/';
+                window.location.href = aiServiceUrl;
             }
         } catch (error) {
             console.error('Connection failed:', error);

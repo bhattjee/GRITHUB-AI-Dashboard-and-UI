@@ -14,7 +14,7 @@ const Dashboard = () => {
           <div className="flex items-center space-x-3 mb-2">
             <LayoutDashboard className="h-8 w-8 text-gym-accent" />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-              Grithub Fitness Dashboard
+              GRITHUB AI Dashboard
             </h1>
           </div>
           <p className="text-gray-400">Track your progress, customize workouts, and reach your fitness goals</p>

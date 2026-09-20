@@ -1,69 +1,109 @@
-# Welcome to your Lovable project
+# GRITHUB AI Dashboard UI and Service
 
-## Project info
+A modern AI-powered fitness dashboard application built with React, TypeScript, and shadcn/ui. Track your progress, customize workouts, and reach your fitness goals with AI-generated or manual workout plans.
 
-**URL**: https://lovable.dev/projects/70e66692-146b-45e6-b7e7-459ebc283540
+## Features
 
-## How can I edit this code?
+- **AI-Generated Workout Plans**: Get personalized workout plans using AI integration
+- **Manual Workout Selection**: Choose from pre-built workout plans
+- **Custom Workout Builder**: Create your own personalized workout routines
+- **Trainer Workouts**: Access workout plans created by professional trainers
+- **28-Day Challenge**: Participate in structured fitness challenges
+- **Profile Management**: Track your fitness journey and manage your profile
+- **Modern UI**: Beautiful dark-themed interface with smooth animations
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **React 18** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Fast build tool and dev server
+- **Tailwind CSS** - Utility-first CSS framework
+- **shadcn/ui** - High-quality UI components
+- **Radix UI** - Accessible component primitives
+- **React Router** - Client-side routing
+- **TanStack Query** - Data fetching and state management
+- **Recharts** - Chart library for data visualization
+- **Lucide React** - Icon library
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/70e66692-146b-45e6-b7e7-459ebc283540) and start prompting.
+## Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js (v18 or higher)
+- npm, yarn, or pnpm
 
-**Use your preferred IDE**
+## Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd grithub-ai-dashboard
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Available Scripts
 
-**Use GitHub Codespaces**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build for development mode
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project Structure
 
-## What technologies are used for this project?
+```
+src/
+├── components/
+│   ├── dashboard/       # Dashboard-specific components
+│   └── ui/             # shadcn/ui components
+├── pages/              # Page components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions
+└── main.tsx           # Application entry point
+```
 
-This project is built with .
+## Environment Variables
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Create a `.env` file in the root directory (see `.env.example` if available):
 
-## How can I deploy this project?
+```env
+# Add your environment variables here
+```
 
-Simply open [Lovable](https://lovable.dev/projects/70e66692-146b-45e6-b7e7-459ebc283540) and click on Share -> Publish.
+## AI Integration
 
-## I want to use a custom domain - is that possible?
+The application integrates with an AI service running on `localhost:5001` for generating workout plans. Ensure the AI service is running before using the AI-generated plan feature.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Deployment
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` directory.
+
+### Deploy to Vercel/Netlify
+
+1. Build the project: `npm run build`
+2. Deploy the `dist` folder to your preferred hosting service
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Security Notes
+
+- Never commit `.env` files or sensitive data
+- The application currently references `localhost:5001` for AI integration - update this for production
+- Ensure proper authentication before deploying to production
